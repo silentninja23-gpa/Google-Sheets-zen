@@ -1,0 +1,15 @@
+Step 1: Create the Google Sheet
+Open Google Sheets and create a Blank spreadsheet.
+
+Name the sheet something fun, like Cell Dungeon.
+
+Step 2: Add the Game Code
+In the top menu, click on Extensions > Apps Script.
+
+Delete any code in the editor (myFunction( )).
+
+Paste the entire script below into the editor
+Step 3: Launch and Play!
+Go back to your Google Sheet tab. (Note: Refresh the browser tab so the custom menu loads properly).
+
+In the top menu bar, click on Zen Sanctuary > Start New Game.
