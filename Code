@@ -1,1 +1,510 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  
+  ui.createMenu('🌸 Zen Sanctuary')
+    .addItem('🍃 Open Main Garden Dashboard', 'initZenGame')
+    .addSeparator()
+    .addItem('🛍️ Open Calm Coin Shop', 'openCalmShop')
+    .addItem('✏️ Open Cozy Crossword Puzzle', 'initCrossword')
+    .addItem('✅ Check My Crossword Answers', 'checkCrossword')
+    .addSeparator()
+    .addItem('🎲 Play Random Interactive Mini-Game', 'playRandomInteractiveGame')
+    .addItem('🔢 Play Mini-Game by Number (1-100)...', 'promptInteractiveGameNumber')
+    .addItem('📜 Generate 100 Mini-Games Master List', 'show100MiniGames')
+    .addSeparator()
+    .addItem('🍵 Brew Calm Tea', 'brewTea')
+    .addItem('🎋 Practice Deep Breathing', 'deepBreathe')
+    .addItem('🪨 Rake the Sand Grid', 'rakeSand')
+    .addItem('✨ Daily Affirmation', 'dailyAffirmation')
+    .addToUi();
+}
 
+function initZenGame() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Zen Sanctuary");
+  
+  if (!sheet) {
+    sheet = ss.insertSheet("Zen Sanctuary");
+  }
+  sheet.clear();
+  sheet.setTabColor("#27ae60");
+
+  var props = PropertiesService.getDocumentProperties();
+  props.setProperties({
+    'Harmony': '85',
+    'TeasBrewed': '3',
+    'MiniGamesPlayed': '0',
+    'ZenCoins': '50',
+    'PurchasedItems': '',
+    'LastAction': 'Welcome to your sanctuary. Stay mindful—mistakes slightly lower your harmony!'
+  });
+
+  buildZenDashboard(sheet);
+  updateZenDisplay();
+}
+
+function buildZenDashboard(sheet) {
+  sheet.setColumnWidth(1, 30);
+  for (let c = 2; c <= 12; c++) {
+    sheet.setColumnWidth(c, 50);
+  }
+
+  sheet.getRange("B2:L3").merge()
+    .setValue("🌿 100-COZY MINI-GAMES & ZEN SANCTUARY 🌿")
+    .setBackground("#1abc9c")
+    .setFontColor("#ffffff")
+    .setFontWeight("bold")
+    .setFontSize(13)
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+
+  sheet.getRange("B5:E5").merge().setValue("MINDFULNESS METRICS").setBackground("#16a085").setFontColor("#fff").setFontWeight("bold").setHorizontalAlignment("center");
+  sheet.getRange("B6:C6").merge().setValue("Harmony Level:").setFontWeight("bold");
+  sheet.getRange("B7:C7").merge().setValue("Teas Brewed:").setFontWeight("bold");
+  sheet.getRange("B8:C8").merge().setValue("Mini-Games Played:").setFontWeight("bold");
+  sheet.getRange("B9:C9").merge().setValue("Calm Coins:").setFontWeight("bold");
+
+  sheet.getRange("G5:L5").merge().setValue("HOW TO PLAY").setBackground("#16a085").setFontColor("#fff").setFontWeight("bold").setHorizontalAlignment("center");
+  sheet.getRange("G6:L6").merge().setValue("Use the top menu '🌸 Zen Sanctuary' to explore!").setFontStyle("italic").setHorizontalAlignment("center");
+  sheet.getRange("G7:L7").merge().setValue("⚠️ Incorrect answers or wrong guesses deduct a little Harmony.").setFontSize(9);
+  sheet.getRange("G8:L8").merge().setValue("🍵 Brew tea or play mini-games carefully to restore it.").setFontSize(9);
+
+  sheet.getRange("B11:L11").merge().setValue("THE OASIS VIEWPORT").setBackground("#16a085").setFontColor("#fff").setFontWeight("bold").setHorizontalAlignment("center");
+  
+  sheet.getRange("B22:L22").merge().setValue("REFLECTIONS & JOURNAL").setBackground("#95a5a6").setFontColor("#fff").setFontWeight("bold").setHorizontalAlignment("center");
+  sheet.getRange("B23:L25").merge().setWrap(true).setVerticalAlignment("top").setBackground("#e8f8f5").setFontFamily("Georgia");
+
+  var viewRange = sheet.getRange("B12:L20");
+  viewRange.setBackground("#d1f2eb").setFontFamily("Courier New").setFontSize(12).setHorizontalAlignment("center").setVerticalAlignment("middle");
+}
+
+function updateZenDisplay() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Zen Sanctuary");
+  if (!sheet) return;
+
+  var props = PropertiesService.getDocumentProperties();
+  var harmony = Math.max(0, parseInt(props.getProperty('Harmony') || '85'));
+  var teas = props.getProperty('TeasBrewed') || '0';
+  var gamesPlayed = props.getProperty('MiniGamesPlayed') || '0';
+  var coins = props.getProperty('ZenCoins') || '50';
+  var lastAction = props.getProperty('LastAction') || 'Ready.';
+
+  sheet.getRange("D6:E6").merge().setValue(harmony + " / 100").setHorizontalAlignment("center").setBackground("#d4efdf");
+  sheet.getRange("D7:E7").merge().setValue(teas).setHorizontalAlignment("center").setBackground("#d4efdf");
+  sheet.getRange("D8:E8").merge().setValue(gamesPlayed).setHorizontalAlignment("center").setBackground("#d4efdf");
+  sheet.getRange("D9:E9").merge().setValue(coins).setHorizontalAlignment("center").setBackground("#d4efdf");
+
+  sheet.getRange("B23").setValue(lastAction);
+  drawOasis(sheet);
+}
+
+function drawOasis(sheet) {
+  var grid = [];
+  for (let r = 0; r < 9; r++) {
+    let row = [];
+    for (let c = 0; c < 11; c++) {
+      row.push(" ~ ");
+    }
+    grid.push(row);
+  }
+
+  var props = PropertiesService.getDocumentProperties();
+  var items = props.getProperty('PurchasedItems') || "";
+
+  grid[2][2] = items.indexOf("Bonsai") !== -1 ? " 🌲 " : " 🌸 ";
+  grid[2][5] = " 🍵 ";
+  grid[2][8] = items.indexOf("Fireplace") !== -1 ? " 🔥 " : " 🎋 ";
+  grid[4][5] = items.indexOf("Diffuser") !== -1 ? " 💨 " : " 🪷 ";
+  grid[6][2] = " 🪨 ";
+  grid[6][8] = items.indexOf("Looper") !== -1 ? " 🎶 " : " 🍃 ";
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 11; c++) {
+      var cell = sheet.getRange(12 + r, 2 + c);
+      cell.setValue(grid[r][c]);
+      cell.setBackground("#e8f8f5").setFontColor("#117a65");
+    }
+  }
+
+  sheet.getRange("B14").setValue("       ~ TRANQUIL OASIS ~       ");
+  sheet.getRange("B15").setValue("Your sanctuary evolves as you buy shop upgrades.");
+  sheet.getRange("B16").setValue("Select 'Open Calm Coin Shop' from the top menu bar!");
+  sheet.getRange("B17").setValue("");
+  sheet.getRange("B18").setValue("");
+}
+
+// --- CALM COIN SHOP ENGINE ---
+function openCalmShop() {
+  var ui = SpreadsheetApp.getUi();
+  var props = PropertiesService.getDocumentProperties();
+  var coins = parseInt(props.getProperty('ZenCoins') || '50');
+  var purchased = props.getProperty('PurchasedItems') || "None";
+
+  var shopChoice = ui.prompt(
+    "🛍️ CALM COIN SHOP (You have " + coins + " Calm Coins)",
+    "Items owned: " + purchased + "\n\n" +
+    "Type the number of the item you want to buy:\n" +
+    "1. 🌲 Mini Bonsai Tree (Cost: 30 coins) -> +5 Harmony\n" +
+    "2. 🔥 Cozy Brick Fireplace (Cost: 40 coins) -> +8 Harmony\n" +
+    "3. 💨 Aromatherapy Diffuser (Cost: 25 coins) -> +4 Harmony\n" +
+    "4. 🎶 Lo-Fi Beats Looper (Cost: 50 coins) -> +12 Harmony",
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (shopChoice.getSelectedButton() == ui.Button.OK) {
+    var choice = shopChoice.getResponseText().trim();
+    var itemName = "";
+    var cost = 0;
+    var harmonyBoost = 0;
+
+    if (choice === "1") {
+      itemName = "Mini Bonsai Tree";
+      cost = 30;
+      harmonyBoost = 5;
+    } else if (choice === "2") {
+      itemName = "Cozy Brick Fireplace";
+      cost = 40;
+      harmonyBoost = 8;
+    } else if (choice === "3") {
+      itemName = "Aromatherapy Diffuser";
+      cost = 25;
+      harmonyBoost = 4;
+    } else if (choice === "4") {
+      itemName = "Lo-Fi Beats Looper";
+      cost = 50;
+      harmonyBoost = 12;
+    } else {
+      ui.alert("Invalid selection. Visit the shop anytime!");
+      return;
+    }
+
+    if (coins >= cost) {
+      coins -= cost;
+      props.setProperty('ZenCoins', coins);
+      
+      var currentHarmony = parseInt(props.getProperty('Harmony') || '85');
+      currentHarmony = Math.min(100, currentHarmony + harmonyBoost);
+      props.setProperty('Harmony', currentHarmony);
+
+      var currentItems = props.getProperty('PurchasedItems') || "";
+      if (currentItems.indexOf(itemName) === -1) {
+        props.setProperty('PurchasedItems', currentItems === "" ? itemName : currentItems + ", " + itemName);
+      }
+
+      props.setProperty('LastAction', "🛍️ Purchased " + itemName + "! Your harmony increased.");
+      updateZenDisplay();
+      ui.alert("🎉 Purchase Successful!", "You bought the " + itemName + "!", ui.ButtonSet.OK);
+    } else {
+      ui.alert("☕ Not enough Calm Coins!", "You need " + cost + " Calm Coins, but you only have " + coins + ".");
+    }
+  }
+}
+
+// --- INTERACTIVE SCRIPT MINI-GAME ENGINE ---
+function playRandomInteractiveGame() {
+  var randId = Math.floor(Math.random() * 100) + 1;
+  runInteractiveMiniGame(randId);
+}
+
+function promptInteractiveGameNumber() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Play Interactive Cozy Game', 'Enter a mini-game number between 1 and 100:', ui.ButtonSet.OK_CANCEL);
+  
+  if (response.getSelectedButton() == ui.Button.OK) {
+    var num = parseInt(response.getResponseText());
+    if (num >= 1 && num <= 100) {
+      runInteractiveMiniGame(num);
+    } else {
+      ui.alert('Please enter a valid number from 1 to 100.');
+    }
+  }
+}
+
+function runInteractiveMiniGame(id) {
+  var ui = SpreadsheetApp.getUi();
+  var categories = ["Puzzle & Logic", "Sensory & Ambient", "Creative & Craft", "Memory & Focus", "Idle & Relax"];
+  var cat = categories[(id - 1) % categories.length];
+  var name = getCozyGameName(id, cat);
+
+  var result = false;
+  var answered = false;
+  
+  if (cat === "Puzzle & Logic") {
+    var guess = ui.prompt("🧩 " + name + " (#" + id + ")", 
+      "Logic Puzzle: A gentle breeze shifts 3 smooth stones. If stone A is heavier than B, and B is heavier than C, which stone is lightest? (Type A, B, or C):", 
+      ui.ButtonSet.OK_CANCEL);
+    if (guess.getSelectedButton() == ui.Button.OK) {
+      answered = true;
+      if (guess.getResponseText().toUpperCase().trim() === "C") {
+        result = true;
+      }
+    }
+  } else if (cat === "Sensory & Ambient") {
+    var guess = ui.prompt("🌧️ " + name + " (#" + id + ")", 
+      "Sensory Focus: Listen closely to your breathing. How many seconds did your last inhale feel like? (Type a number, e.g., 4):", 
+      ui.ButtonSet.OK_CANCEL);
+    if (guess.getSelectedButton() == ui.Button.OK) {
+      answered = true;
+      result = true;
+    }
+  } else if (cat === "Creative & Craft") {
+    var guess = ui.prompt("🎨 " + name + " (#" + id + ")", 
+      "Creative Prompt: You are designing a serene ceramic vase. What color glaze do you choose? (Blue, Sage, Terracotta, or Gold):", 
+      ui.ButtonSet.OK_CANCEL);
+    if (guess.getSelectedButton() == ui.Button.OK) {
+      answered = true;
+      result = true;
+    }
+  } else if (cat === "Memory & Focus") {
+    var targetNum = Math.floor(Math.random() * 5) + 3;
+    var guess = ui.prompt("🧘 " + name + " (#" + id + ")", 
+      "Focus Test: Quick! Imagine " + targetNum + " glowing fireflies in the garden. How many fireflies were there?", 
+      ui.ButtonSet.OK_CANCEL);
+    if (guess.getSelectedButton() == ui.Button.OK) {
+      answered = true;
+      if (parseInt(guess.getResponseText().trim()) === targetNum) {
+        result = true;
+      }
+    }
+  } else {
+    var guess = ui.prompt("🛋️ " + name + " (#" + id + ")", 
+      "Cozy Check-in: You take a moment to rest. Do you want to add 1 sugar or 2 to your warm cozy drink? (Type 1 or 2):", 
+      ui.ButtonSet.OK_CANCEL);
+    if (guess.getSelectedButton() == ui.Button.OK) {
+      answered = true;
+      result = true;
+    }
+  }
+
+  if (!answered) return;
+
+  var props = PropertiesService.getDocumentProperties();
+  var played = parseInt(props.getProperty('MiniGamesPlayed') || '0') + 1;
+  props.setProperty('MiniGamesPlayed', played);
+
+  var currentHarmony = parseInt(props.getProperty('Harmony') || '85');
+
+  if (result) {
+    var coins = parseInt(props.getProperty('ZenCoins') || '50') + 25;
+    props.setProperty('ZenCoins', coins);
+    currentHarmony = Math.min(100, currentHarmony + 3);
+    props.setProperty('Harmony', currentHarmony);
+    props.setProperty('LastAction', "🎮 Completed Interactive Game #" + id + ": " + name + "! Success! (+25 Coins, +3 Harmony)");
+    updateZenDisplay();
+    ui.alert("🌟 Brilliant! Puzzle Solved!", "You completed " + name + " successfully.\n(+25 Calm Coins, +3 Harmony)", ui.ButtonSet.OK);
+  } else {
+    var coins = parseInt(props.getProperty('ZenCoins') || '50') + 5;
+    props.setProperty('ZenCoins', coins);
+    currentHarmony = Math.max(0, currentHarmony - 5);
+    props.setProperty('Harmony', currentHarmony);
+    props.setProperty('LastAction', "⚠️ Incorrect answer on Game #" + id + ": " + name + ". (-5 Harmony)");
+    updateZenDisplay();
+    ui.alert("🍃 Mind Unfocused...", "That wasn't quite right. Your inner harmony dipped slightly (-5 Harmony). Take a deep breath and try again!", ui.ButtonSet.OK);
+  }
+}
+
+// --- CROSSWORD PUZZLE ---
+function initCrossword() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Cozy Crossword");
+  
+  if (!sheet) {
+    sheet = ss.insertSheet("Cozy Crossword");
+  } else {
+    sheet.clear();
+  }
+  sheet.setTabColor("#f39c12");
+
+  sheet.getRange("A1:G1").merge()
+    .setValue("🧩 COZY ZEN CROSSWORD PUZZLE 🧩")
+    .setBackground("#f39c12")
+    .setFontColor("#ffffff")
+    .setFontWeight("bold")
+    .setFontSize(13)
+    .setHorizontalAlignment("center");
+
+  var gridRange = sheet.getRange("B4:F8");
+  gridRange.setBackground("#fcf3cf")
+    .setFontFamily("Courier New")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle")
+    .setBorder(true, true, true, true, true, true, "#7f8c8d", SpreadsheetApp.BorderStyle.SOLID);
+
+  sheet.setColumnWidth(1, 30);
+  sheet.setColumnWidth(2, 45);
+  sheet.setColumnWidth(3, 45);
+  sheet.setColumnWidth(4, 45);
+  sheet.setColumnWidth(5, 45);
+  sheet.setColumnWidth(6, 45);
+  sheet.setColumnWidth(7, 30);
+  sheet.setColumnWidth(8, 40);
+  sheet.setColumnWidth(9, 250);
+  sheet.setColumnWidth(10, 250);
+
+  var inactiveCells = ["B5", "D5", "E5", "E6", "B7", "D7", "E7", "B8", "D8", "E8"];
+  inactiveCells.forEach(function(cellRef) {
+    sheet.getRange(cellRef).setBackground("#34495e").setValue("");
+  });
+
+  sheet.getRange("I4").setValue("ACROSS CLUES").setFontWeight("bold").setBackground("#f39c12").setFontColor("#fff");
+  sheet.getRange("I5").setValue("1. Tranquility and inner calm (5 letters)").setFontSize(10);
+  sheet.getRange("I6").setValue("3. Warm brewed beverage in our garden (3 letters)").setFontSize(10);
+
+  sheet.getRange("J4").setValue("DOWN CLUES").setFontWeight("bold").setBackground("#f39c12").setFontColor("#fff");
+  sheet.getRange("J5").setValue("1. Soft earthy plant found on rocks (4 letters)").setFontSize(10);
+  sheet.getRange("J6").setValue("2. Gentle flowing water sound (5 letters)").setFontSize(10);
+
+  SpreadsheetApp.getUi().alert("Crossword Ready!", "A new tab named 'Cozy Crossword' has been generated.", SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+function checkCrossword() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Cozy Crossword");
+  
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert("Please open the crossword first using the menu!");
+    return;
+  }
+
+  var correct = true;
+  var answers = {
+    "B4": "P", "C4": "E", "D4": "A", "E4": "C", "F4": "E",
+    "C5": "L",
+    "B6": "T", "C6": "E", "D6": "A",
+    "C7": "R",
+    "C8": "M"
+  };
+
+  for (var cellRef in answers) {
+    var val = sheet.getRange(cellRef).getValue().toString().toUpperCase().trim();
+    if (val !== answers[cellRef]) {
+      correct = false;
+      sheet.getRange(cellRef).setBackground("#f5b7b1");
+    } else {
+      sheet.getRange(cellRef).setBackground("#d4efdf");
+    }
+  }
+
+  var ui = SpreadsheetApp.getUi();
+  var props = PropertiesService.getDocumentProperties();
+  var currentHarmony = parseInt(props.getProperty('Harmony') || '85');
+
+  if (correct) {
+    var coins = parseInt(props.getProperty('ZenCoins') || '50') + 30;
+    props.setProperty('ZenCoins', coins);
+    currentHarmony = Math.min(100, currentHarmony + 5);
+    props.setProperty('Harmony', currentHarmony);
+    props.setProperty('LastAction', "🎉 Solved crossword puzzle correctly! (+30 Coins, +5 Harmony)");
+    updateZenDisplay();
+    ui.alert("🎉 Wonderful! All crossword answers are correct! (+30 Calm Coins, +5 Harmony)");
+  } else {
+    currentHarmony = Math.max(0, currentHarmony - 8);
+    props.setProperty('Harmony', currentHarmony);
+    props.setProperty('LastAction', "⚠️ Crossword check failed with errors. (-8 Harmony)");
+    updateZenDisplay();
+    ui.alert("⚠️ Some letters are incorrect (highlighted in red).\nYour inner focus wavered (-8 Harmony). Fix the red cells and check again!");
+  }
+}
+
+// --- STANDARD MENU ACTIONS ---
+function brewTea() {
+  var props = PropertiesService.getDocumentProperties();
+  var teas = parseInt(props.getProperty('TeasBrewed') || '0') + 1;
+  var coins = parseInt(props.getProperty('ZenCoins') || '50') + 10;
+  var currentHarmony = Math.min(100, parseInt(props.getProperty('Harmony') || '85') + 4);
+  props.setProperty('TeasBrewed', teas);
+  props.setProperty('ZenCoins', coins);
+  props.setProperty('Harmony', currentHarmony);
+  props.setProperty('LastAction', "🍵 You brewed green tea. Relax and enjoy. (+10 Coins, +4 Harmony)");
+  updateZenDisplay();
+}
+
+function deepBreathe() {
+  var props = PropertiesService.getDocumentProperties();
+  var currentHarmony = Math.min(100, parseInt(props.getProperty('Harmony') || '85') + 5);
+  props.setProperty('Harmony', currentHarmony);
+  props.setProperty('LastAction', "🎋 Inhale slowly... hold... exhale gently. Your nervous system thanks you. (+5 Harmony)");
+  updateZenDisplay();
+}
+
+function rakeSand() {
+  var props = PropertiesService.getDocumentProperties();
+  var coins = parseInt(props.getProperty('ZenCoins') || '50') + 5;
+  var currentHarmony = Math.min(100, parseInt(props.getProperty('Harmony') || '85') + 2);
+  props.setProperty('ZenCoins', coins);
+  props.setProperty('Harmony', currentHarmony);
+  props.setProperty('LastAction', "🪨 You raked the zen garden sand. (+5 Coins, +2 Harmony)");
+  updateZenDisplay();
+}
+
+function dailyAffirmation() {
+  var affirmations = [
+    "You are doing wonderfully, exactly as you are.",
+    "Peace comes from within. Do not seek it without.",
+    "Let go of what you cannot control; welcome what is here now.",
+    "Every breath is a fresh start and a new beginning."
+  ];
+  var aff = affirmations[Math.floor(Math.random() * affirmations.length)];
+  var props = PropertiesService.getDocumentProperties();
+  var currentHarmony = Math.min(100, parseInt(props.getProperty('Harmony') || '85') + 3);
+  props.setProperty('Harmony', currentHarmony);
+  props.setProperty('LastAction', "✨ Daily Affirmation: \"" + aff + "\" (+3 Harmony)");
+  updateZenDisplay();
+}
+
+function show100MiniGames() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("100 Cozy Mini-Games");
+  
+  if (!sheet) {
+    sheet = ss.insertSheet("100 Cozy Mini-Games");
+  } else {
+    sheet.clear();
+  }
+  sheet.setTabColor("#8e44ad");
+
+  sheet.getRange("A1:D1").merge()
+    .setValue("✨ THE MASTER DIRECTORY OF 100 COZY MINI-GAMES & MINDFUL ACTIVITIES ✨")
+    .setBackground("#8e44ad")
+    .setFontColor("#ffffff")
+    .setFontWeight("bold")
+    .setFontSize(12)
+    .setHorizontalAlignment("center");
+
+  sheet.getRange("A2").setValue("No.");
+  sheet.getRange("B2").setValue("Mini-Game / Activity Name");
+  sheet.getRange("C2").setValue("Category");
+  sheet.getRange("D2").setValue("How to Play / Description");
+  sheet.getRange("A2:D2").setBackground("#d7bde2").setFontWeight("bold");
+
+  var categories = ["Puzzle & Logic", "Sensory & Ambient", "Creative & Craft", "Memory & Focus", "Idle & Relax"];
+  var gamesList = [];
+  for (let i = 1; i <= 100; i++) {
+    var cat = categories[(i - 1) % categories.length];
+    var name = getCozyGameName(i, cat);
+    gamesList.push([i, name, cat, "A peaceful " + cat.toLowerCase() + " mini-game experience."]);
+  }
+
+  sheet.getRange(3, 1, gamesList.length, 4).setValues(gamesList);
+  sheet.setColumnWidth(1, 50);
+  sheet.setColumnWidth(2, 220);
+  sheet.setColumnWidth(3, 150);
+  sheet.setColumnWidth(4, 450);
+  sheet.getRange("A3:D102").setVerticalAlignment("middle");
+
+  SpreadsheetApp.getUi().alert("Directory Generated!", "The '100 Cozy Mini-Games' tab has been updated.", SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+function getCozyGameName(i, cat) {
+  var library = {
+    "Puzzle & Logic": ["Cloud Connection", "Pebble Sorting", "Constellation Weaver", "Haiku Builder", "Tea Leaf Reading", "Path of Petals", "Moss Puzzle", "Crystal Alignment", "Lighthouse Glow", "Breeze Flow", "Starlight Sudoku Light", "Shell Matching", "Bamboo Pipe Water Flow", "Shadow Puppet Match", "Zen Garden Stones", "Honey Comb Link", "Autumn Leaf Fall Drop", "Dewdrop Merger", "Snail Race Predictor", "Origami Fold Steps"],
+    "Sensory & Ambient": ["Virtual Fireplace Watcher", "Rain Window Tap", "Cat Purr Simulator", "Windchime Tone Player", "Ocean Wave Rhythm", "Cloud Watcher", "Forest Canopy Light", "Midnight Cricket Listener", "Tea Steam Tracker", "Birdsong Matcher", "Snowflake Melter", "Sunbeam Finder", "Campfire Sparkle", "Whale Song Echo", "Lavender Scent Visualizer", "Thunderstorm Visualizer", "Bamboo Grove Rustle", "Starry Night Drift", "Autumn Ember Glow", "Morning Fog Lift"],
+    "Creative & Craft": ["Digital Pottery Wheel", "Terrarium Designer", "Flower Crown Weaver", "Pixel Canvas Paint", "Watercolor Bleed", "Dreamcatcher Creator", "Knit a Scarf Pattern", "Candle Pour Simulator", "Muffin Baker Timer", "Wind Chime Builder", "Patchwork Quilt Layout", "Bonsai Tree Pruner", "Potion Brewer", "Stained Glass Maker", "Cookie Decorator", "Paper Lantern Painter", "Shell Necklace Stringer", "Beaded Bracelet Designer", "Chalkboard Doodle", "Mosaic Tile Setter"],
+    "Memory & Focus": ["Lotus Petal Count", "Firefly Catch", "Star Constellation Trace", "Rhythmic Tapping", "Breath Synchronizer", "Stone Balance Stacker", "Ripple Effect Watcher", "Floating Leaf Tracker", "Zen Garden Path Memory", "Bird Migration Watch", "Candle Flame Focus", "Pond Fish Counter", "Moon Phase Tracker", "Hourglass Watcher", "Cloud Shape Guesser", "Gentle Echo Listener", "Color Gradient Harmonizer", "Ticking Clock Softener", "Footsteps in Snow", "Swaying Reed Match"],
+    "Idle & Relax": ["Sunbathing Cat", "Hot Cocoa Sipper", "Cozy Cabin Watch", "Reading Nook Simulator", "Hammock Swinger", "Tea House Owner", "Bakery Window Gazer", "Rainy Day Reader", "Floating Candle River", "Stargazing Blanket", "Forest Mushroom Grower", "Honey Bee Caretaker", "Autumn Porch Watch", "Lighthouse Keeper", "Lantern Festival Sender", "Secret Garden Wander", "Bookstore Cat Petter", "Window Frost Melter", "Sunrise Greeter", "Sunset Watcher"]
+  };
+  return library[cat][(i % library[cat].length)];
+}
